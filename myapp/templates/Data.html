@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Ocean-Themed Calendar</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- FullCalendar CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Smooth Transitions */
+      * {
+        transition: all 0.3s ease-in-out;
+      }
+
+      /* Light and Dark Mode */
+      body.light-mode {
+        background-color: #f8f9fa;
+        color: #343a40;
+        overflow-y: auto;
+      }
+      body.dark-mode {
+        background-color: #000000;
+        color: #e0f7fa;
+        overflow-y: hidden;
+      }
+
+      /* Calendar Container with Enhanced Hover Effect */
+      .calendar-container {
+        max-width: 900px;
+        margin: 50px auto;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 3px 10px rgba(13, 211, 194, 0.2);
+        position: relative;
+        overflow: hidden;
+        transition: box-shadow 0.3s ease;
+        width: 80%;
+        background: rgba(
+          255,
+          255,
+          255,
+          0.85
+        ); /* Light background for visibility */
+        border-radius: 10px;
+      }
+      .calendar-container:hover {
+        box-shadow: 0 12px 30px rgba(0, 188, 212, 0.6); /* Intensified shadow on hover */
+      }
+
+      .dark-mode .calendar-container {
+        background: rgba(
+          30,
+          30,
+          30,
+          0.85
+        ); /* Darker background for dark mode */
+        color: #e0e0e0; /* Light text for dark mode */
+      }
+
+      /* Smooth Month Transition */
+      .fc-view-container {
+        animation: fadeIn 0.5s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* Full-screen background video styling */
+      #seasonalVideo {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        z-index: -1; /* Place the video behind other content */
+        opacity: 0.7; /* Faded effect */
+      }
+
+      /* Optional overlay effect */
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(50, 20, 0, 0.4); /* Dark brown faded overlay */
+        z-index: 0;
+      }
+
+      /* Text Shadow */
+      h2,
+      .footer-text,
+      .fc-toolbar-title,
+      .btn,
+      #modeToggle {
+        text-shadow: 0 0 5px #00ffc5, 0 0 10px #00ffc5;
+      }
+
+      /* Button Styles (Mode Toggle and Navigation) */
+      .btn,
+      #modeToggle {
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        margin: 5px;
+        padding: 10px 15px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      }
+      body.light-mode .btn,
+      body.light-mode #modeToggle {
+        background-color: #00bcd4;
+      }
+      body.dark-mode .btn,
+      body.dark-mode #modeToggle {
+        background-color: #00ffc5;
+      }
+      .btn:hover,
+      #modeToggle:hover {
+        background-color: #00796b;
+        color: #e0f7fa;
+        box-shadow: 0px 4px 12px rgba(0, 188, 212, 0.8); /* Enhanced button shadow */
+      }
+
+      /* Event Colors */
+      .fc-daygrid-event {
+        border: none;
+        color: white;
+        font-size: 0.9rem;
+        border-radius: 5px;
+      }
+      body.light-mode .fc-daygrid-event {
+        background-color: #00796b;
+      }
+      body.dark-mode .fc-daygrid-event {
+        background-color: #00bcd4;
+        color: #333; /* Dark font on lighter background for readability */
+      }
+
+      /* Current Day Highlighting */
+      .fc-day-today {
+        border: 2px solid #00bcd4;
+        background: rgba(0, 179, 164, 0.247);
+      }
+      body.dark-mode .fc-day-today {
+        border: 2px solid #00ffc5;
+      }
+
+      /* Calendar Dates and Weekday Styling */
+      .fc-daygrid-day-number {
+        font-size: 1.4rem; /* Increased font size */
+        font-weight: bold; /* Bolder font */
+        padding: 5px;
+        display: inline-block;
+        width: 100%;
+        text-align: center;
+      }
+      body.light-mode .fc-daygrid-day-number {
+        color: #00bcd4; /* Ocean green color */
+      }
+      body.dark-mode .fc-daygrid-day-number {
+        color: #00e5ff; /* Ocean blue color */
+      }
+
+      /* Calendar Weekdays Styling */
+      .fc-col-header-cell-cushion {
+        font-weight: bold;
+        font-size: 1rem;
+        text-align: center;
+        padding: 10px;
+      }
+      body.light-mode .fc-col-header-cell-cushion {
+        color: #00bcd4; /* Ocean green for weekdays in light mode */
+        border-bottom: 1px solid black;
+      }
+      body.dark-mode .fc-col-header-cell-cushion {
+        color: #00e5ff; /* Ocean blue for weekdays in dark mode */
+        border-bottom: 1px solid white;
+      }
+
+      /* Hover Effect on Date Numbers */
+      .fc-daygrid-day:hover .fc-daygrid-day-number {
+        box-shadow: 0 0 12px rgba(0, 188, 212, 0.8); /* Enhanced date shadow */
+        cursor: pointer;
+      }
+
+      /* Hover Effect on Calendar Dates */
+      .fc-daygrid-day-number:hover {
+        background-color: rgba(
+          0,
+          188,
+          212,
+          0.2
+        ); /* Light background on hover */
+      }
+
+      /* Hover Effect on Calendar Container */
+      .calendar-container:hover .fc-daygrid-day-number {
+        box-shadow: 0 0 15px rgba(0, 188, 212, 0.8); /* Shadow intensification */
+      }
+    </style>
+  </head>
+  <body class="light-mode">
+    <video
+      class="overlay"
+      id="seasonalVideo"
+      autoplay
+      muted
+      loop
+      style="width: 100%; height: auto"
+    >
+      <source src="" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+
+    <div class="calendar-container">
+      <h2 class="text-center">My Event Calendar</h2>
+      <div id="calendar" class="mt-4"></div>
+      <div class="footer-text text-center">
+        © Developed by Md. Eyalid Onim <br />CBI-033 Python-Django Course
+        <br />Instructor: Shaikat
+      </div>
+    </div>
+
+    <!-- Mode Toggle Button -->
+    <span id="modeToggle">🌙</span>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var calendarEl = document.getElementById("calendar");
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: "dayGridMonth",
+          headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay",
+          },
+          events: function (fetchInfo, successCallback, failureCallback) {
+            fetch("/api/events/")
+              .then((response) => response.json())
+              .then((data) => {
+                let events = data.map((event) => ({
+                  id: event.id,
+                  title: event.title,
+                  start: event.start_time,
+                  end: event.end_time,
+                  allDay: event.all_day,
+                  description: event.description,
+                }));
+                successCallback(events);
+              })
+              .catch(failureCallback);
+          },
+          editable: true,
+          dateClick: function (info) {
+            Swal.fire({
+              title: "Add Event",
+              html:
+                '<input type="text" id="eventTitle" class="swal2-input" placeholder="Event Title">' +
+                '<textarea id="eventDescription" class="swal2-textarea" placeholder="Event Description"></textarea>' +
+                '<div style="margin-bottom:10px;">' +
+                '<label><input type="radio" name="timeOption" value="allDay" checked> All Day</label>' +
+                '<label style="margin-left:10px;"><input type="radio" name="timeOption" value="specificTime"> Specific Time</label>' +
+                "</div>" +
+                '<input type="time" id="startTime" class="swal2-input" style="display:none;" placeholder="Start Time">' +
+                '<input type="time" id="endTime" class="swal2-input" style="display:none;" placeholder="End Time">',
+              showCancelButton: true,
+              confirmButtonText: "Add",
+              cancelButtonText: "Cancel",
+              preConfirm: () => {
+                const title = document.getElementById("eventTitle").value;
+                const description =
+                  document.getElementById("eventDescription").value;
+                const isAllDay =
+                  document.querySelector('input[name="timeOption"]:checked')
+                    .value === "allDay";
+                const startTime = isAllDay
+                  ? info.dateStr + "T00:00:00"
+                  : info.dateStr +
+                    "T" +
+                    document.getElementById("startTime").value;
+                const endTime = isAllDay
+                  ? info.dateStr + "T23:59:59"
+                  : info.dateStr +
+                    "T" +
+                    document.getElementById("endTime").value;
+
+                if (!title) {
+                  Swal.showValidationMessage("Event title is required!");
+                  return;
+                }
+                return {
+                  title,
+                  description,
+                  startTime,
+                  endTime,
+                  allDay: isAllDay,
+                };
+              },
+            }).then((result) => {
+              if (result.isConfirmed) {
+                createEvent(result.value);
+              }
+            });
+
+            // Toggle time inputs based on selection
+            document
+              .querySelectorAll('input[name="timeOption"]')
+              .forEach((radio) => {
+                radio.addEventListener("change", function () {
+                  const showTime = this.value === "specificTime";
+                  document.getElementById("startTime").style.display = showTime
+                    ? "block"
+                    : "none";
+                  document.getElementById("endTime").style.display = showTime
+                    ? "block"
+                    : "none";
+                });
+              });
+          },
+          eventClick: function (info) {
+            Swal.fire({
+              title: "Event Details",
+              html:
+                `<strong>Title:</strong> ${info.event.title}<br>` +
+                `<strong>Description:</strong> ${
+                  info.event.extendedProps.description || "No description"
+                }<br>` +
+                `<strong>Time:</strong> ${
+                  info.event.allDay ? "All Day" : formatTime(info.event.start)
+                } - ${formatTime(info.event.end)}`,
+              showDenyButton: true,
+              showCancelButton: true,
+              confirmButtonText: "Edit",
+              denyButtonText: "Delete",
+              cancelButtonText: "Close",
+            }).then((result) => {
+              if (result.isConfirmed) {
+                editEvent(info.event);
+              } else if (result.isDenied) {
+                deleteEvent(info.event);
+              }
+            });
+          },
+          eventContent: function (arg) {
+            return {
+              html: `<div class="fc-event-title">${arg.event.title}</div>`,
+            }; // Only display title
+          },
+        });
+
+        calendar.render();
+
+        // Function to update the seasonal video based on the calendar's current month
+        function updateSeasonalVideo() {
+          const seasonalVideo = document.getElementById("seasonalVideo");
+          const videoSource = seasonalVideo.querySelector("source");
+          const month = new Date(calendar.getDate()).getMonth() + 1;
+
+          let videoUrl;
+          switch (month) {
+            case 12:
+            case 1: // Winter (December & January)
+              videoUrl =
+                "https://videos.pexels.com/video-files/857195/857195-hd_1280_720_25fps.mp4";
+              break;
+            case 2:
+            case 3: // Spring (February & March)
+              videoUrl =
+                "https://videos.pexels.com/video-files/6800631/6800631-hd_1920_1080_30fps.mp4";
+              break;
+            case 4:
+            case 5: // Summer (April & May)
+              videoUrl =
+                "https://videos.pexels.com/video-files/1644693/1644693-hd_1920_1080_30fps.mp4";
+              break;
+            case 6:
+            case 7: // Monsoon (June & July)
+              videoUrl =
+                "https://videos.pexels.com/video-files/8549595/8549595-uhd_2560_1440_25fps.mp4";
+              break;
+            case 8:
+            case 9: // Autumn (August & September)
+              videoUrl =
+                "https://videos.pexels.com/video-files/857036/857036-hd_1920_1080_25fps.mp4";
+              break;
+            case 10:
+            case 11: // Late Autumn/Hemanta (October & November)
+              videoUrl =
+                "https://videos.pexels.com/video-files/9947144/9947144-hd_1920_1080_30fps.mp4";
+              break;
+            default:
+              videoUrl = "https://www.example.com/default_video.mp4";
+          }
+          // Set the video source and reload the video
+          videoSource.src = videoUrl;
+          seasonalVideo.load(); // Reload video
+        }
+
+        // Call updateSeasonalVideo when the calendar view changes
+        calendar.on("datesSet", updateSeasonalVideo);
+        updateSeasonalVideo(); // Initial load
+
+        function createEvent(eventData) {
+          fetch(`/api/events/`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({
+              title: eventData.title,
+              description: eventData.description,
+              start_time: eventData.startTime,
+              end_time: eventData.endTime,
+              all_day: eventData.allDay,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              calendar.refetchEvents();
+              Swal.fire("Success!", "Event created!", "success");
+            })
+            .catch((error) =>
+              Swal.fire("Error!", "Event could not be created!", "error")
+            );
+        }
+
+        function editEvent(event) {
+          const isAllDay = event.allDay;
+
+          Swal.fire({
+            title: "Edit Event",
+            html:
+              `<input type="text" id="editEventTitle" class="swal2-input" value="${event.title}">` +
+              `<textarea id="editEventDescription" class="swal2-textarea">${
+                event.extendedProps.description || ""
+              }</textarea>` +
+              '<div style="margin-bottom:10px;">' +
+              `<label><input type="radio" name="editTimeOption" value="allDay" ${
+                isAllDay ? "checked" : ""
+              }> All Day</label>` +
+              `<label style="margin-left:10px;"><input type="radio" name="editTimeOption" value="specificTime" ${
+                !isAllDay ? "checked" : ""
+              }> Specific Time</label>` +
+              "</div>" +
+              `<input type="time" id="editStartTime" class="swal2-input" style="display:${
+                !isAllDay ? "block" : "none"
+              };" value="${!isAllDay ? formatTime(event.start) : ""}">` +
+              `<input type="time" id="editEndTime" class="swal2-input" style="display:${
+                !isAllDay ? "block" : "none"
+              };" value="${!isAllDay ? formatTime(event.end) : ""}">`,
+            showCancelButton: true,
+            confirmButtonText: "Save",
+            cancelButtonText: "Cancel",
+            preConfirm: () => {
+              const newTitle = document.getElementById("editEventTitle").value;
+              const newDescription = document.getElementById(
+                "editEventDescription"
+              ).value;
+              const isAllDaySelected =
+                document.querySelector('input[name="editTimeOption"]:checked')
+                  .value === "allDay";
+              const newStartDate = event.start.toISOString().slice(0, 10); // YYYY-MM-DD
+              const newStartTime = isAllDaySelected
+                ? newStartDate + "T00:00:00"
+                : newStartDate +
+                  "T" +
+                  document.getElementById("editStartTime").value;
+              const newEndTime = isAllDaySelected
+                ? newStartDate + "T23:59:59"
+                : newStartDate +
+                  "T" +
+                  document.getElementById("editEndTime").value;
+
+              return {
+                newTitle,
+                newDescription,
+                newStartTime,
+                newEndTime,
+                allDay: isAllDaySelected,
+              };
+            },
+          }).then((result) => {
+            if (result.isConfirmed) {
+              calendar.refetchEvents();
+              updateEvent(event, result.value);
+            }
+          });
+
+          // Toggle time inputs based on radio button selection
+          document
+            .querySelectorAll('input[name="editTimeOption"]')
+            .forEach((radio) => {
+              radio.addEventListener("change", function () {
+                const showTime = this.value === "specificTime";
+                document.getElementById("editStartTime").style.display =
+                  showTime ? "block" : "none";
+                document.getElementById("editEndTime").style.display = showTime
+                  ? "block"
+                  : "none";
+              });
+            });
+        }
+
+        function updateEvent(event, data) {
+          fetch(`/api/events/${event.id}/`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({
+              title: data.newTitle,
+              description: data.newDescription,
+              start_time: data.newStartTime,
+              end_time: data.newEndTime,
+              all_day: data.allDay,
+            }),
+          })
+            .then((response) => {
+              if (response.ok) {
+                event.setProp("title", data.newTitle);
+                event.setExtendedProp("description", data.newDescription);
+                event.setStart(data.newStartTime);
+                event.setEnd(data.newEndTime);
+                calendar.refetchEvents();
+                Swal.fire(
+                  "Updated!",
+                  "Your event has been updated.",
+                  "success"
+                );
+              } else {
+                Swal.fire("Error!", "Failed to update the event.", "error");
+              }
+            })
+            .catch((error) =>
+              Swal.fire("Error!", "Could not update event!", "error")
+            );
+        }
+
+        function deleteEvent(event) {
+          fetch(`/api/events/${event.id}/`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+          })
+            .then((response) => {
+              if (response.ok) {
+                event.remove();
+                Swal.fire(
+                  "Deleted!",
+                  "Your event has been deleted.",
+                  "success"
+                );
+              } else {
+                Swal.fire("Error!", "Failed to delete the event.", "error");
+              }
+            })
+            .catch((error) =>
+              Swal.fire("Error!", "Could not delete event!", "error")
+            );
+        }
+
+        function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(
+                  cookie.substring(name.length + 1)
+                );
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
+
+        function formatTime(date) {
+          const hours = date.getHours();
+          const minutes = date.getMinutes();
+          const ampm = hours >= 12 ? "PM" : "AM";
+          const formattedHours = hours % 12 || 12;
+          return `${formattedHours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
+        }
+      });
+      // Function to check for upcoming events
+      function checkEventNotifications() {
+        const currentDate = new Date();
+
+        // Fetch events from calendar API or previously loaded events
+        fetch("/api/events/")
+          .then((response) => response.json())
+          .then((events) => {
+            events.forEach((event) => {
+              const eventStart = new Date(event.start_time);
+              const eventTitle = event.title;
+
+              // Notify if the current time matches the event start time
+              if (
+                currentDate.toISOString().slice(0, 16) ===
+                eventStart.toISOString().slice(0, 16)
+              ) {
+                Swal.fire({
+                  icon: "info",
+                  title: "Event Reminder",
+                  text: `The event "${eventTitle}" is starting now!`,
+                  confirmButtonText: "OK",
+                });
+              }
+            });
+          })
+          .catch((error) =>
+            console.error("Error fetching events for notification:", error)
+          );
+      }
+
+      // Check every minute if any event notification should be triggered
+      setInterval(checkEventNotifications, 60000);
+
+      const modeToggle = document.getElementById("modeToggle");
+      modeToggle.addEventListener("click", function () {
+        document.body.classList.toggle("dark-mode");
+        document.body.classList.toggle("light-mode");
+        modeToggle.textContent = document.body.classList.contains("dark-mode")
+          ? "☀"
+          : "🌙";
+        calendar.refetchEvents();
+      });
+    </script>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </body>
+</html>
